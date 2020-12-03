@@ -1,0 +1,197 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Животные</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+</head>
+<body>
+<div class="header">
+    <div class="header-link">
+        <a href="farmers.html" >Фермеры</a>
+    </div>
+    <div class="header-link current-link">
+        <a href="animals.html">Животные</a>
+    </div>
+    <div class="header-link">
+        <a href="animalTypes.html">Виды животных</a>
+    </div>
+</div>
+<div id="content">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <td class="id-column">Id</td>
+                <td>Имя</td>
+                <td>Вес</td>
+                <td>Тип животного</td>
+                <td>Фермер</td>
+                <td class="delete-button">Удаление</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="animal in animalList">
+                <td>{{animal.id}}</td>
+                <td>{{animal.name}}</td>
+                <td>{{animal.weight}}</td>
+                <td>{{animal.animalType.name}}</td>
+                <td>{{animal.farmer.name + " " + animal.farmer.surname}}</td>
+                <td class="delete-button">
+                    <img class="del-img" src="/static/delete.png" width="16px" height="16px" @click="deleteAnimal(animal)">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="creation">
+        <div class="creation-form">
+            <div class="input-form">
+                <label for="name">Имя</label>
+                <input id="name" type="text" v-model="name">
+            </div>
+            <div class="input-form">
+                <label for="weight">Вес</label>
+                <input id="weight" type="text" v-model="weight">
+            </div>
+            <div class="input-form">
+                <label for="animalType">Вид животных</label>
+                <select id="animalType" v-model="selectedAnimalType">
+                    <option v-for="animalType in animalTypes" v-bind:value="animalType.id">{{animalType.name}}</option>
+                </select>
+            </div>
+            <div class="input-form">
+                <label for="farmer">Фермер</label>
+                <select id="farmer" v-model="selectedFarmer">
+                    <option v-for="farmer in farmers" v-bind:value="farmer.id">{{farmer.name + " " + farmer.surname}}</option>
+                </select>
+            </div>
+            <div class="input-form">
+                <button style="margin: auto" @click="addAnimal">Добавить животное</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var SERVER_ERROR_MESSAGE = "Server error";
+    var vue = new Vue({
+        el: "#content",
+        data:{
+            addApi: Vue.resource('../add/animal'),
+            deleteApi: Vue.resource('../delete/animal'),
+            animalListApi: Vue.resource('../animals'),
+            animalTypeListApi: Vue.resource('../animalTypes'),
+            farmerListApi: Vue.resource('../farmers'),
+            selectedAnimalType: "",
+            selectedFarmer: "",
+            animalList: [],
+            name: "",
+            weight: "",
+            animalTypes: [],
+            farmers: []
+        },
+        methods:{
+            addAnimal: function () {
+                if (this.name === "" || this.weight === "" || this.selectedAnimalType === "" || this.selectedFarmer === "" ){
+                    alert("Fill name, weight, selectedAnimalType, selectedFarmer");
+                    return;
+                }
+                this.addApi
+                    .get({name: this.name, weight: this.weight, animalTypeId: this.selectedAnimalType, farmerId: this.selectedFarmer})
+                    .then(
+                        response => {
+                            if (response.status !== 200) {
+                                alert(SERVER_ERROR_MESSAGE);
+                                return;
+                            }
+                            let serverResponse = response.body;
+                            if (serverResponse.success === true) {
+                                let animal = serverResponse.message;
+                                this.animalList.push(animal);
+                            }else{
+                                alert(serverResponse.message)
+                            }
+                        },
+                        errorResponse => {
+                            alert(SERVER_ERROR_MESSAGE);
+                        },
+                );
+            },
+            deleteAnimal: function (animal) {
+                this.deleteApi
+                    .get({id: animal.id})
+                    .then(
+                        response => {
+                            if (response.status !== 200) {
+                                alert(SERVER_ERROR_MESSAGE);
+                                return;
+                            }
+                            let serverResponse = response.body;
+                            if (serverResponse.success === false) {
+                                alert(serverResponse.message)
+                            }else {
+                                let index = this.animalList.indexOf(animal);
+                                this.animalList.splice(index, 1);
+                            }
+                        },
+                        errorResponse => {
+                            alert(SERVER_ERROR_MESSAGE);
+                        },
+                    );
+            }
+
+        },
+        beforeMount: function () {
+            this.animalListApi
+                .get()
+                .then(
+                    response => {
+                        console.log(response);
+                        if (response.status !== 200) {
+                            alert(SERVER_ERROR_MESSAGE);
+                            return;
+                        }
+                        this.animalList = response.body;
+                    },
+                    errorResponse => {
+                        alert(SERVER_ERROR_MESSAGE);
+                    },
+                );
+            this.animalTypeListApi
+            .get()
+            .then(
+                response => {
+                    console.log(response);
+                    if (response.status !== 200) {
+                        alert(SERVER_ERROR_MESSAGE);
+                        return;
+                    }
+                    this.animalTypes = response.body;
+                },
+                errorResponse => {
+                    alert(SERVER_ERROR_MESSAGE);
+                },
+            );
+            this.farmerListApi
+            .get()
+            .then(
+                response => {
+                    console.log(response);
+                    if (response.status !== 200) {
+                        alert(SERVER_ERROR_MESSAGE);
+                        return;
+                    }
+                    this.farmers = response.body;
+                },
+                errorResponse => {
+                    alert(SERVER_ERROR_MESSAGE);
+                },
+            );
+        }
+    });
+
+</script>
+</body>
+</html>

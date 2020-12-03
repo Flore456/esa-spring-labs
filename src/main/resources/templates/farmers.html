@@ -1,0 +1,146 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Фермеры</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue-resource@1.5.1"></script>
+</head>
+<body>
+<div class="header">
+    <div class="header-link current-link">
+        <a href="farmers.html" >Фермеры</a>
+    </div>
+    <div class="header-link">
+        <a href="animals.html">Животные</a>
+    </div>
+    <div class="header-link">
+        <a href="animalTypes.html">Виды животных</a>
+    </div>
+</div>
+<div id="content">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <td class="id-column">Id</td>
+                <td>Имя</td>
+                <td>Фамилия</td>
+                <td class="delete-button">Удаление</td>
+            </tr>
+            </thead>
+            <tbody>
+            <tr v-for="farmer in farmerList">
+                <td>{{farmer.id}}</td>
+                <td>{{farmer.name}}</td>
+                <td>{{farmer.surname}}</td>
+                <td class="delete-button">
+                    <img class="del-img" src="/static/delete.png" width="16px" height="16px" @click="deleteFarmer(farmer)">
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="creation">
+        <div class="creation-form">
+            <div class="input-form">
+                <label for="name">Имя</label>
+                <input id="name" type="text" v-model="name">
+            </div>
+            <div class="input-form">
+                <label for="surname">Фамилия</label>
+                <input id="surname" type="text" v-model="surname">
+            </div>
+            <div class="input-form">
+                <button style="margin: auto" @click="addFarmer">Добавить фермера</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    var SERVER_ERROR_MESSAGE = "Server error";
+    var vue = new Vue({
+        el: "#content",
+        data:{
+            addApi: Vue.resource('../add/farmer'),
+            deleteApi: Vue.resource('../delete/farmer'),
+            farmerListApi: Vue.resource('../farmers'),
+            farmerList: [],
+            name: "",
+            surname: ""
+        },
+        methods:{
+            addFarmer: function () {
+                if (this.name === "" || this.surname === ""){
+                    alert("Fill name and surname");
+                    return;
+                }
+                this.addApi
+                    .get({name: this.name, surname: this.surname})
+                    .then(
+                        response => {
+                            if (response.status !== 200) {
+                                alert(SERVER_ERROR_MESSAGE);
+                                return;
+                            }
+                            let serverResponse = response.body;
+                            if (serverResponse.success === true) {
+                                let farmer = serverResponse.message;
+                                this.farmerList.push(farmer);
+                            }else{
+                                alert(serverResponse.message)
+                            }
+                        },
+                        errorResponse => {
+                            alert(SERVER_ERROR_MESSAGE);
+                        },
+                );
+            },
+            deleteFarmer: function (farmer) {
+                this.deleteApi
+                    .get({id: farmer.id})
+                    .then(
+                        response => {
+                            if (response.status !== 200) {
+                                alert(SERVER_ERROR_MESSAGE);
+                                return;
+                            }
+                            let serverResponse = response.body;
+                            if (serverResponse.success === false) {
+                                alert(serverResponse.message)
+                            }else {
+                                let index = this.farmerList.indexOf(farmer);
+                                this.farmerList.splice(index, 1);
+                            }
+                        },
+                        errorResponse => {
+                            alert(SERVER_ERROR_MESSAGE);
+                        },
+                    );
+            }
+
+        },
+        beforeMount: function () {
+            this.farmerListApi
+                .get()
+                .then(
+                    response => {
+                        console.log(response);
+                        if (response.status !== 200) {
+                            alert(SERVER_ERROR_MESSAGE);
+                            return;
+                        }
+                        this.farmerList = response.body;
+                    },
+                    errorResponse => {
+                        alert(SERVER_ERROR_MESSAGE);
+                    },
+                );
+        }
+    });
+
+
+</script>
+</body>
+</html>
