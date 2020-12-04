@@ -52,7 +52,7 @@ public class AnimalController {
         animal.setAnimalType(t);
 
         Animal newAnimal = repo.save(animal);
-        return new GoodResponse(animal);
+        return new GoodResponse(newAnimal);
     }
 
     @GetMapping(path = "/delete/animal", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
