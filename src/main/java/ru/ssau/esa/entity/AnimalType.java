@@ -35,4 +35,13 @@ public class AnimalType extends NamedLongIdEntity{
     public int hashCode() {
         return id.hashCode();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AnimalType{").append("\n\t");
+        sb.append("id=").append(id).append(",\n\t");
+        sb.append("name='").append(name).append('\'').append("\n");
+        sb.append('}');
+        return sb.toString();
+    }
 }
