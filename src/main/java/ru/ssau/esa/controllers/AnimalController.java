@@ -4,9 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.ssau.esa.entity.Animal;
-import ru.ssau.esa.entity.AnimalType;
-import ru.ssau.esa.entity.Farmer;
+import ru.ssau.esa.entity.*;
+import ru.ssau.esa.notifications.EmailSenderService;
+import ru.ssau.esa.notifications.JmsSenderService;
 import ru.ssau.esa.repos.AnimalRepo;
 import ru.ssau.esa.repos.AnimalTypeRepo;
 import ru.ssau.esa.repos.FarmerRepo;
@@ -20,12 +20,15 @@ public class AnimalController {
     private final AnimalRepo repo;
     private final AnimalTypeRepo animalTypeRepo;
     private final FarmerRepo farmerRepo;
+    private final JmsSenderService jmsSenderService;
 
     @Autowired
-    public AnimalController(AnimalRepo repo, AnimalTypeRepo animalTypeRepo, FarmerRepo farmerRepo) {
+    public AnimalController(AnimalRepo repo, AnimalTypeRepo animalTypeRepo, FarmerRepo farmerRepo,
+                            JmsSenderService jmsSenderService) {
         this.repo = repo;
         this.animalTypeRepo = animalTypeRepo;
         this.farmerRepo = farmerRepo;
+        this.jmsSenderService = jmsSenderService;
     }
 
     @GetMapping(path = "/animals", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -50,8 +53,9 @@ public class AnimalController {
             return new BadResponse("AnimalType not found");
         }
         animal.setAnimalType(t);
-
         Animal newAnimal = repo.save(animal);
+        jmsSenderService.sendAnimalUpdate(newAnimal, EventType.CREATE);
+        jmsSenderService.sendEvent(Animal.class, newAnimal, EventType.CREATE);
         return new GoodResponse(newAnimal);
     }
 
@@ -62,6 +66,8 @@ public class AnimalController {
             return new BadResponse("Animal not found");
         }
         repo.delete(animal);
+        jmsSenderService.sendAnimalUpdate(animal, EventType.DELETE);
+        jmsSenderService.sendEvent(Animal.class, animal, EventType.DELETE);
         return new GoodResponse();
     }
 }

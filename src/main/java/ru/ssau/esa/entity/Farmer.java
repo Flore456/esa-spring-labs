@@ -16,6 +16,9 @@ public class Farmer extends NamedLongIdEntity{
     @Column(name = "surname")
     private String surname;
 
+    @Column(name = "email")
+    private String email;
+
     @JsonIgnore
     @OneToMany(mappedBy = "farmer")
     private List<Animal> animals;
@@ -36,6 +39,14 @@ public class Farmer extends NamedLongIdEntity{
         this.animals = animals;
     }
 
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -51,6 +62,12 @@ public class Farmer extends NamedLongIdEntity{
 
     @Override
     public String toString() {
-        return String.format("%s %s", name, surname);
+        final StringBuilder sb = new StringBuilder("Farmer{").append("\n\t");
+        sb.append("id=").append(id).append(",\n\t");
+        sb.append("surname='").append(surname).append('\'').append(",\n\t");
+        sb.append("name='").append(name).append('\'').append(",\n\t");
+        sb.append("email='").append(email).append('\'').append("\n");
+        sb.append('}');
+        return sb.toString();
     }
 }

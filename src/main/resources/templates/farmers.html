@@ -29,6 +29,7 @@
                 <td class="id-column">Id</td>
                 <td>Имя</td>
                 <td>Фамилия</td>
+                <td>E-mail</td>
                 <td class="delete-button">Удаление</td>
             </tr>
             </thead>
@@ -37,6 +38,7 @@
                 <td>{{farmer.id}}</td>
                 <td>{{farmer.name}}</td>
                 <td>{{farmer.surname}}</td>
+                <td>{{farmer.email}}</td>
                 <td class="delete-button">
                     <img class="del-img" src="/static/delete.png" width="16px" height="16px" @click="deleteFarmer(farmer)">
                 </td>
@@ -56,6 +58,10 @@
                 <input id="surname" type="text" v-model="surname">
             </div>
             <div class="input-form">
+                <label for="email">E-mail</label>
+                <input id="email" type="email" v-model="email">
+            </div>
+            <div class="input-form">
                 <button style="margin: auto" @click="addFarmer">Добавить фермера</button>
             </div>
         </div>
@@ -71,16 +77,17 @@
             farmerListApi: Vue.resource('../farmers'),
             farmerList: [],
             name: "",
-            surname: ""
+            surname: "",
+            email: ""
         },
         methods:{
             addFarmer: function () {
-                if (this.name === "" || this.surname === ""){
-                    alert("Fill name and surname");
+                if (this.name === "" || this.surname === "" || this.email === ""){
+                    alert("Fill name, surname and email");
                     return;
                 }
                 this.addApi
-                    .get({name: this.name, surname: this.surname})
+                    .get({name: this.name, surname: this.surname, email: this.email})
                     .then(
                         response => {
                             if (response.status !== 200) {
