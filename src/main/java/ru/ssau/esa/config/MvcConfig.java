@@ -15,6 +15,7 @@ public class MvcConfig implements WebMvcConfigurer {
     @Bean
     public ViewResolver xsltViewResolver() {
         XsltViewResolver viewResolver = new XsltViewResolver();
+        viewResolver.setOrder(1);
         viewResolver.setViewClass(XsltView.class);
         viewResolver.setViewNames("farmerXSL", "animalTypeXSL", "animalXSL");
         viewResolver.setPrefix("classpath:/xsl/");
